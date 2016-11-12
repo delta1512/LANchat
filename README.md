@@ -1,20 +1,7 @@
 # LANchat
 
-Local Area Network chat application:
+P2Pchat branch:
 
-Host group chats and talk to other users on the same local network.
+This branch is a workaround to the master branch issue that disallows multiple clients. 
 
-Current ability of the program:
-
-    - Able to host a server
-    - Able to have one user connected at a time
-    
-Future additions:
-
-    - Administration tools for serverside
-    - Exception handling for networking errors
-    - Ping tests for disconnected users
-    - Client UI enhancements
-    - Better error messages (possibly a debug mode)
-    - Pressing enter will send the message
-    - Customisable UI
+I aim for this to be a single script which acts as a sort of email-style client where you discover peers on the network and address a message to them

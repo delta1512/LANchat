@@ -8,7 +8,7 @@ import tkinter
 from tkinter import *
 
 client = Tk()
-client.geometry('730x500')
+client.geometry('820x500')
 
 def qhndlr():
         if not q.empty():
@@ -25,6 +25,7 @@ def sockthread():
                 d, addr = c.accept()
                 data = str(d.recv(2048).decode())
                 q.put(data)
+                d.close()
 def broadhndlr():
         serverlist.delete(0, END)
         servers = []
@@ -98,24 +99,23 @@ def comm(data, addr):
         a.close()
         return
 
+peerlistlb = Label(client, text='Peer list\n(double click to messsage)').grid(row=0, column=0)
 global serverlist
-serverlist = Listbox(client, width=20, height=15)
-serverlist.grid(row=0, column=0, sticky=N)
-labela = Label(client, text='Select server:').grid(row=1, column=0, sticky=N)
-global serverselect
-serverselect = Entry(client, width=19)
-serverselect.grid(row=2, column=0, sticky=N)
-connect = Button(client, text='Connect', width=17, command=lambda: connectf()).grid(row=3, column=0, sticky=N)
-disconnect = Button(client, text='Disconnect', width=17, command=lambda: disconnectf()).grid(row=4, column=0, sticky=N)
-refresh = Button(client, text='Refresh servers', width=17, command=lambda: refreshf()).grid(row=5, column=0, sticky=N)
+serverlist = Listbox(client, width=20, height=20) #change to peerlist
+serverlist.grid(row=1, column=0, sticky=N)
+refresh = Button(client, text='Refresh peers', width=17, command=lambda: refreshf()).grid(row=2, column=0, sticky=N)
 
 global chatbox
-chatbox = Listbox(client, width=50, height=25)
-chatbox.grid(row=0, column=1, rowspan=5)
+chatbox = Listbox(client, width=61, height=26)
+chatbox.grid(row=0, column=1, rowspan=3)
+tolb = Label(client, text='To:').grid(row=3, column=1, sticky=W)
+global peersel
+peersel = Listbox(client, width=10, height=1)
+peersel.grid(row=3, column=1, sticky=W, padx=25)
 global msgbox
-msgbox = Entry(client, width=35)
-msgbox.grid(row=5, column=1, sticky=W)
-send = Button(client, text='Send', width=10, command=lambda: sendf()).grid(row=5, column=1, sticky=SE)
+msgbox = Entry(client, width=33)
+msgbox.grid(row=3, column=1, sticky=W, padx=110)
+send = Button(client, text='Send', width=10, command=lambda: sendf()).grid(row=3, column=1, sticky=SE)
 
 labelb = Label(client, text='Username:').grid(row=0, column=2, sticky=N)
 global namein
@@ -134,14 +134,3 @@ randomnames = ['Bob', 'JohnSmith', 'Chad', 'Stacy',
 
 client.after(100, qhndlr)
 client.mainloop()
-
-'''
-Cleanup notes:
-        - Remove double brackets, test if they are necessary
-        - Uneccessary return statements
-        - Only use one socket object for broadcast
-        - Change socket vars to a, b, c...
-        - Global var for UDP and TCP port number
-        - t.close() (ln: 29) shouldn't exist but test first
-        - sys module may not be required
-'''

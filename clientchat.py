@@ -27,6 +27,21 @@ def sockthread():
                 q.put(data)
                 d.close()
 def broadhndlr():
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        udp = 14196
+        s.bind(('', udp))
+        while True:
+                data, addr = s.recvfrom(1024)
+                print(data)
+                if data.decode() == socket.gethostname():
+                        pass
+                else:
+                        time.sleep(0.1)
+                        name = 'test'
+                        s.sendto(name.encode(), (addr[0], udp))
+def broadacc():
         serverlist.delete(0, END)
         servers = []
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -34,7 +49,7 @@ def broadhndlr():
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         t.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         port = 14196
-        broad = 'ping'
+        broad = socket.gethostname()
         s.sendto(broad.encode(), ('224.0.0.1', port))
         s.close()
         t.bind(('', port))
@@ -47,36 +62,9 @@ def broadhndlr():
                 servinfo = [data.decode(), addr[0]]
                 servers.append(servinfo)
         return servers
-def connectf():
-        refreshf()
-        serverfound = False
-        global servaddr
-        select = serverselect.get()
-        for x in range(0, len(servlist)):
-                if str(servlist[x][0]) == str(select):
-                        servaddr = servlist[x][1]
-                        usrname = namein.get()
-                        if usrname == '':
-                                y = random.randint(0, len(randomnames))
-                                usrname = randomnames[y]
-                                comm('Username box empty, using random name: ' + usrname, 'localhost')
-                        comm('-c ' + str(usrname) + ':', servlist[x][1])
-                        serverfound = True
-                        break
-        if not serverfound:
-                comm('Server not found. Try refreshing or check spelling', 'localhost')
-        return
-def disconnectf():
-        usrname = namein.get()
-        if usrname == '':
-                y = random.randint(0, len(randomnames))
-                usrname = randomnames[y]
-                comm('Username box empty, using random name: ' + usrname, 'localhost')
-        comm('-d ' + str(usrname), servaddr)
-        return
 def refreshf():
-        global servlist
-        servlist = broadhndlr()
+        global servlist #may be unnecessary if defined outside of function
+        servlist = broadacc()
         for x in range(0, len(servlist)):
                 serverlist.insert(END, str(servlist[x][0]))
         return
@@ -84,11 +72,12 @@ def sendf():
         msg = msgbox.get()
         usrname = namein.get()
         if usrname == '':
-                y = random.randint(0, len(randomnames))
-                usrname = randomnames[y]
-                comm('Username box empty, using random name: ' + usrname, 'localhost')
+                comm('Username box empty, set username to chat with other users', 'localhost')
+                #clear function
+                return
         #do something that limits the amount of characters
         comm(usrname + ': ' + msg, servaddr)
+        #clear function
         return
 def comm(data, addr):
         a = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -98,8 +87,12 @@ def comm(data, addr):
         a.sendall(data.encode())
         a.close()
         return
+def clear(option):
+        #basic clear
+		#clears based on options
+        return
 
-peerlistlb = Label(client, text='Peer list\n(double click to messsage)').grid(row=0, column=0)
+peerlistlb = Label(client, text='Peer list\n(double click)').grid(row=0, column=0)
 global serverlist
 serverlist = Listbox(client, width=20, height=20) #change to peerlist
 serverlist.grid(row=1, column=0, sticky=N)
@@ -125,7 +118,9 @@ namein.grid(row=0, column=2, sticky=N, pady=20)
 global q
 q = multiprocessing.Queue()
 t = multiprocessing.Process(target=sockthread)
+t0 = multiprocessing.Process(target=broadhndlr)
 t.start()
+t0.start()
 
 global randomnames
 randomnames = ['Bob', 'JohnSmith', 'Chad', 'Stacy',
